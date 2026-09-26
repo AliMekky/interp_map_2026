@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map of interpretability in 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFF3; --surface:#F9FAFC; --ink:#17233A; --muted:#566275; --line:#CDD4DD;
+  --heat:23,35,58; --focus:#2F6FDB;
+  --iclr:#2F6FDB; --icml:#0E8F7E; --acl:#B0428A; --cvpr:#B8740F;
+  --q-rep:#3B78D8; --q-mech:#E0822A; --q-plan:#7D5BD0; --q-detect:#D8434E; --q-control:#179A86; --q-origin:#B38E0E; --q-valid:#CC4F8C;
+  --tint:.12;
+  --sans:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
+  --serif:"Literata",Georgia,"Times New Roman",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161F; --surface:#18212D; --ink:#E3E9F1; --muted:#98A4B5; --line:#2B3747;
+    --heat:150,180,230; --focus:#7FA8F0;
+    --iclr:#6C9BF0; --icml:#3CC2AE; --acl:#DE77BD; --cvpr:#E3A548;
+    --q-rep:#6E9EEC; --q-mech:#F0A45C; --q-plan:#A98BEA; --q-detect:#EE7880; --q-control:#43C3AE; --q-origin:#DDBB45; --q-valid:#E583B3;
+    --tint:.18;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161F; --surface:#18212D; --ink:#E3E9F1; --muted:#98A4B5; --line:#2B3747;
+  --heat:150,180,230; --focus:#7FA8F0;
+  --iclr:#6C9BF0; --icml:#3CC2AE; --acl:#DE77BD; --cvpr:#E3A548;
+  --q-rep:#6E9EEC; --q-mech:#F0A45C; --q-plan:#A98BEA; --q-detect:#EE7880; --q-control:#43C3AE; --q-origin:#DDBB45; --q-valid:#E583B3;
+  --tint:.18;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1320px;margin:0 auto;padding:36px 24px 64px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px 40px}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,4.2vw,3.2rem);line-height:1.05;margin:0;letter-spacing:-0.015em}
+.sub{font-family:var(--serif);font-size:clamp(1rem,1.6vw,1.25rem);color:var(--muted);margin:10px 0 0}
+.sub span{color:var(--ink)}
+.venuebox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.venuebox > span{font-size:.8rem;color:var(--muted);display:block;margin-bottom:8px}
+.intro{color:var(--muted);max-width:74ch;margin:18px 0 0;font-size:.95rem}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;margin:24px 0 16px}
+.group{display:flex;flex-direction:column;gap:6px}
+.group > span{font-size:.8rem;color:var(--muted);font-weight:500}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.toggle{font:inherit;font-size:.88rem;font-weight:500;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.toggle .sw{width:10px;height:10px;border-radius:50%;background:var(--vc)}
+.toggle[aria-pressed="false"]{opacity:.5}
+.toggle[aria-pressed="false"] .sw{background:transparent;box-shadow:inset 0 0 0 1.5px var(--vc)}
+.toggle.on{border-color:var(--ink)}
+input[type=search]{font:inherit;font-size:.92rem;padding:6px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:240px}
+.active{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:32px;margin-bottom:12px}
+.active .lab{font-size:.85rem;color:var(--muted)}
+.fchip{font:inherit;font-size:.82rem;border:0;border-radius:999px;padding:4px 10px;cursor:pointer;background:rgba(var(--heat),.1);color:var(--ink)}
+.fchip b{font-weight:600}
+.fchip span{margin-left:6px;color:var(--muted)}
+
+/* atlas */
+.atlas{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.mapwrap{padding:14px 12px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg.atlas-svg{display:block;width:100%;min-width:900px;height:auto}
+.colh{font-family:var(--serif);font-weight:600;font-size:15px;fill:var(--ink)}
+.colsub{font-size:11.5px;fill:var(--muted);font-family:var(--sans)}
+.edge{fill:none;stroke-linecap:round;opacity:.5}
+svg.sel .edge{opacity:.06}
+svg.sel .edge.hi{opacity:.85}
+svg.hp .edge{opacity:.05}
+svg.hp .edge.on{opacity:.95}
+.nd{cursor:pointer}
+.nd .box{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.nd.zero{opacity:.35}
+svg.sel .nd:not(.hi){opacity:.4}
+svg.hp .nd:not(.on){opacity:.35}
+.nd.picked .box{stroke:var(--ink);stroke-width:2}
+.nd:hover .box{stroke:var(--ink)}
+.nlab{font-family:var(--sans);font-size:12.5px;line-height:1.2;color:var(--ink);display:flex;align-items:center;height:100%;padding:0 30px 0 10px}
+.qlab{font-family:var(--sans);display:flex;flex-direction:column;justify-content:center;height:100%;padding:0 30px 0 12px}
+.qlab b{font-size:13.5px;line-height:1.2;color:var(--qc)}
+.qlab span{font-size:11px;line-height:1.25;color:var(--muted);margin-top:3px}
+.ncount{font-family:var(--sans);font-size:11.5px;font-weight:600;fill:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.edge{transition:opacity .15s}.nd{transition:opacity .15s}}
+
+/* paper panel */
+.papers-panel{display:flex;flex-direction:column;max-height:var(--ph,760px)}
+.pp-head{padding:16px 18px 10px;border-bottom:1px solid var(--line)}
+.pp-head h2{font-family:var(--serif);font-size:1.1rem;margin:0}
+.pp-head p{margin:2px 0 0;font-size:.82rem;color:var(--muted)}
+.pp-list{overflow-y:auto;padding:6px 8px 10px}
+.pi{display:block;width:100%;text-align:left;font:inherit;background:none;border:0;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--ink);display:grid;grid-template-columns:8px 1fr auto;gap:4px 10px;align-items:start}
+.pi:hover,.pi:focus-visible{background:rgba(var(--heat),.07)}
+.pi .qdots{display:flex;flex-direction:column;gap:3px;padding-top:5px}
+.pi .qdots i{width:8px;height:8px;border-radius:50%;background:var(--qc)}
+.pi .tt{font-size:.84rem;font-weight:600;line-height:1.3}
+.pi .how{grid-column:2;font-size:.76rem;color:var(--muted);line-height:1.3}
+.pi .vb{font-size:.72rem;font-weight:700;color:var(--vc);text-align:right;line-height:1.2}
+.pi .vb small{display:block;font-weight:500;color:var(--muted)}
+
+
+/* tabs */
+.tabs{display:flex;gap:4px;margin:26px 0 4px;border-bottom:1.5px solid var(--line)}
+.tab{font:inherit;font-size:1rem;font-weight:600;background:none;border:0;color:var(--muted);padding:10px 16px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1.5px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.tab:hover{color:var(--ink)}
+
+/* explainer */
+#tab-explain{margin-top:22px}
+.hero-ex{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:center;padding:26px 28px}
+.hero-text h2,.ex-sec > h2{font-family:var(--serif);font-weight:700;font-size:1.55rem;margin:0 0 10px;line-height:1.2}
+.hero-text p{margin:0 0 10px;max-width:56ch}
+.steps{margin:6px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.ex-sec{margin-top:34px}
+.ex-lead{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.qcard{border-radius:12px;padding:14px 16px;background:color-mix(in srgb,var(--qc) calc(var(--tint)*100%),var(--surface));border:1px solid color-mix(in srgb,var(--qc) 40%,transparent)}
+.qcard h3{margin:0;font-size:1.05rem;color:var(--qc)}
+.qcard .plain{margin:4px 0 8px;font-family:var(--serif);font-size:1rem;line-height:1.4}
+.qcard .eg{margin:0;font-size:.84rem;color:var(--muted)}
+.qcard .eg b{color:var(--ink);font-weight:600}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.tcard .stage{background:rgba(var(--heat),.04);border-bottom:1px solid var(--line);padding:10px}
+.tcard .stage svg{display:block;width:100%;height:auto;max-height:180px}
+.tcard .body{padding:14px 18px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.tcard h3{margin:0;font-family:var(--serif);font-size:1.12rem}
+.tcard .what{margin:0;font-size:.93rem}
+.tcard .like{margin:0;font-size:.85rem;color:var(--muted)}
+.tcard .like b{color:var(--ink);font-weight:600}
+.tcard .used{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.8rem;color:var(--muted);margin-top:auto;padding-top:4px}
+.tcard .used .chip{border:1px solid var(--qc);color:var(--qc);background:transparent}
+.tcard .go{font:inherit;font-size:.85rem;font-weight:600;align-self:flex-start;margin-top:4px;background:var(--ink);color:var(--surface);border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
+
+/* illustration primitives */
+.ill text{font-family:var(--sans)}
+.chipbox{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.chipbox.out{stroke:var(--q-control);stroke-width:2}
+.chiptx{font-size:14px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.cap{font-size:12px;fill:var(--muted);text-anchor:middle}
+.lbl{font-size:11px;fill:var(--muted)}
+.lbl.mid{text-anchor:middle}
+.lbl.ink{fill:var(--ink);font-weight:600}
+.flowline{stroke:var(--muted);stroke-width:2;fill:none}
+.arrowhead{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.modelbox{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.unit{fill:var(--ink);opacity:.18}
+.faint{stroke:var(--ink);opacity:.14;stroke-width:1.5;fill:none}
+.magglass{fill:rgba(var(--heat),.06);stroke:var(--q-rep);stroke-width:4}
+.maghandle{stroke:var(--q-rep);stroke-width:7;stroke-linecap:round}
+
+.ill *{animation-play-state:paused}
+.ill.play *{animation-play-state:running}
+@keyframes pulse{0%,100%{opacity:.16}40%,55%{opacity:.95}}
+@keyframes mag{0%,100%{transform:translate(215px,90px)}25%{transform:translate(330px,160px)}50%{transform:translate(480px,80px)}75%{transform:translate(380px,110px)}}
+@keyframes outpop{0%,70%{opacity:.35}82%,100%{opacity:1}}
+@keyframes needle{0%,15%{transform:rotate(-58deg)}40%,65%{transform:rotate(58deg)}90%,100%{transform:rotate(-58deg)}}
+@keyframes fadeA{0%,30%{opacity:1}42%,85%{opacity:0}97%,100%{opacity:1}}
+@keyframes fadeB{0%,30%{opacity:0}42%,85%{opacity:1}97%,100%{opacity:0}}
+@keyframes cell{0%,100%{fill-opacity:0}8%,26%{fill-opacity:.9}34%{fill-opacity:0}}
+@keyframes celltx{0%,100%{opacity:0}8%,26%{opacity:1}34%{opacity:0}}
+@keyframes steerdot{0%,25%{transform:translate(0,0)}45%,85%{transform:translate(46px,-42px)}100%{transform:translate(0,0)}}
+@keyframes draw{0%,20%{stroke-dashoffset:80}45%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:80}}
+@keyframes patchmove{0%,20%{transform:translate(0,0)}45%,85%{transform:translate(0,64px)}100%{transform:translate(0,0)}}
+@keyframes edge1{0%,10%{stroke-dashoffset:100}30%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:100}}
+@keyframes edge2{0%,35%{stroke-dashoffset:100}55%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:100}}
+@keyframes lit1{0%,5%{opacity:.2}12%,88%{opacity:1}100%{opacity:.2}}
+@keyframes lit2{0%,28%{opacity:.2}33%,88%{opacity:1}100%{opacity:.2}}
+@keyframes lit3{0%,52%{opacity:.2}58%,88%{opacity:1}100%{opacity:.2}}
+@keyframes grow{0%,20%{transform:scaleX(.08)}45%,85%{transform:scaleX(1)}100%{transform:scaleX(.08)}}
+@keyframes docglow{0%,20%{fill-opacity:0}40%,85%{fill-opacity:.9}100%{fill-opacity:0}}
+@keyframes ringlight{0%,100%{opacity:.25;r:6px}12%{opacity:1;r:9px}25%{opacity:.25;r:6px}}
+
+.hero-svg .unit{animation:pulse 3.2s ease-in-out infinite}
+.hero-svg .mag{animation:mag 9s ease-in-out infinite;transform:translate(215px,90px)}
+.hero-svg .out{animation:outpop 3.2s ease-in-out infinite}
+.i-probe .needle{transform-box:view-box;transform-origin:170px 112px;animation:needle 5s ease-in-out infinite}
+.i-probe .unit{animation:pulse 5s ease-in-out infinite}
+.i-sae .c{fill:var(--qc);fill-opacity:0;stroke:var(--line);stroke-width:1.2;animation:cell 6s ease-in-out infinite}
+.i-sae .ct{opacity:0;animation:celltx 6s ease-in-out infinite;font-size:10.5px;font-weight:600;fill:#fff;text-anchor:middle}
+.i-steer .dot{animation:steerdot 5.5s ease-in-out infinite}
+.i-steer .vec{stroke-dasharray:80;animation:draw 5.5s ease-in-out infinite}
+.i-steer .ta,.i-patch .ta,.i-diff .ta{animation:fadeA 5.5s ease-in-out infinite}
+.i-steer .tb,.i-patch .tb,.i-diff .tb{animation:fadeB 5.5s ease-in-out infinite;opacity:0}
+.i-patch .mover{animation:patchmove 5.5s ease-in-out infinite}
+.i-patch .orig{animation:fadeA 5.5s ease-in-out infinite}
+.i-circ .e1{stroke-dasharray:100;animation:edge1 5.5s ease-in-out infinite}
+.i-circ .e2{stroke-dasharray:100;animation:edge2 5.5s ease-in-out infinite}
+.i-circ .n1{animation:lit1 5.5s ease-in-out infinite}
+.i-circ .n2{animation:lit2 5.5s ease-in-out infinite}
+.i-circ .n3{animation:lit3 5.5s ease-in-out infinite}
+.i-diff .big{transform-box:fill-box;transform-origin:left center;animation:grow 5.5s ease-in-out infinite}
+.i-tda .hot{animation:docglow 5.5s ease-in-out infinite;fill-opacity:0}
+.i-tda .e1{stroke-dasharray:100;animation:edge1 5.5s ease-in-out infinite}
+.i-tda .n1{animation:lit2 5.5s ease-in-out infinite}
+.i-geo .rd{animation:ringlight 4s ease-in-out infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .ill *{animation:none !important}
+  .hero-svg .mag{transform:translate(330px,125px)}
+  .i-probe .needle{transform:rotate(50deg)}
+  .i-sae .c.k0{fill-opacity:.9}.i-sae .ct.k0{opacity:1}
+  .i-steer .tb,.i-patch .tb,.i-diff .tb{opacity:1}.i-steer .ta,.i-patch .ta,.i-diff .ta,.i-patch .orig{opacity:0}
+  .i-steer .dot{transform:translate(46px,-42px)}
+  .i-patch .mover{transform:translate(0,64px)}
+  .i-circ .n1,.i-circ .n2,.i-circ .n3,.i-tda .n1{opacity:1}
+  .i-tda .hot{fill-opacity:.9}
+  .unit{opacity:.5}
+}
+@media (max-width:860px){.hero-ex{grid-template-columns:1fr;padding:20px}}
+
+
+/* plan tab */
+#tab-plan{margin-top:22px}
+.plan-hero h2{font-family:var(--serif);font-weight:700;font-size:1.7rem;margin:0 0 8px}
+.plan-lead{font-family:var(--serif);font-size:1.2rem;margin:0 0 8px;max-width:60ch}
+.plan-note{color:var(--muted);font-size:.9rem;margin:0;max-width:78ch}
+.goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.goal{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;text-align:left;font:inherit;color:var(--ink)}
+.goal:hover{border-color:var(--muted)}
+.goal[aria-checked="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.goal .gh{display:flex;align-items:center;gap:10px}
+.goal .radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.goal[aria-checked="true"] .radio{border-color:var(--ink)}
+.goal[aria-checked="true"] .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.goal h3{margin:0;font-size:1.02rem}
+.goal .ev2{margin:0;font-family:var(--serif);font-size:.95rem;line-height:1.4}
+.goal .ev2 b{font-family:var(--sans);font-size:.78rem;color:var(--muted);font-weight:600;display:block;margin-bottom:2px}
+.goal .rel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.78rem;color:var(--muted);margin-top:auto}
+.goal .rel a{font-size:.76rem;padding:2px 9px;border-radius:999px;border:1px solid var(--qc);color:var(--qc);text-decoration:none;cursor:pointer}
+.goal .rel a:hover{background:color-mix(in srgb,var(--qc) 12%,transparent)}
+.src{font-size:.82rem;color:var(--muted);margin:12px 0 0}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.cgroup{padding:16px 18px}
+.cgroup h3{margin:0;font-family:var(--serif);font-size:1.08rem;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.cgroup h3 span{font-family:var(--sans);font-size:.8rem;color:var(--muted);font-weight:500}
+.bar{height:5px;border-radius:3px;background:rgba(var(--heat),.1);margin:8px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--q-control);border-radius:3px}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .2s}}
+.cgroup ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.cgroup label{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;line-height:1.4;padding:5px 4px;border-radius:6px;cursor:pointer}
+.cgroup label:hover{background:rgba(var(--heat),.05)}
+.cgroup input{margin-top:3px;width:16px;height:16px;accent-color:var(--q-control);flex:none}
+.cgroup input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(var(--heat),.4)}
+.stmt{padding:20px 22px}
+.stmt-form{font-family:var(--serif);font-size:1.08rem;line-height:2.3;margin:0}
+.stmt-form input{font:inherit;font-family:var(--sans);font-size:.92rem;border:0;border-bottom:1.5px solid var(--muted);background:rgba(var(--heat),.05);color:var(--ink);padding:3px 8px;border-radius:4px 4px 0 0;min-width:150px;max-width:100%}
+.stmt-form input:focus{outline:none;border-bottom-color:var(--focus);background:rgba(var(--heat),.09)}
+.stmt-out{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.stmt-out p{margin:0 0 12px;font-size:.95rem;line-height:1.55}
+.stmt-out p .blank{color:var(--muted);font-style:italic}
+.stmt-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.clear-btn{font:inherit;font-size:.85rem;background:none;border:1.5px solid var(--line);color:var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer}
+.copymsg{font-size:.85rem;color:var(--muted)}
+.stmt-actions .go{font:inherit;font-size:.85rem;font-weight:600;background:var(--ink);color:var(--surface);border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
+
+/* lower sections */
+.lower{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.sec{padding:18px 20px}
+.sec h2{font-family:var(--serif);font-size:1.15rem;margin:0 0 4px}
+.sec > p{margin:0 0 12px;color:var(--muted);font-size:.85rem}
+.scroll{overflow-x:auto}
+table.cov{border-collapse:separate;border-spacing:3px;width:100%;min-width:640px;font-size:.8rem}
+.cov th{font-weight:500;color:var(--muted);text-align:left;padding:2px 4px}
+.cov thead th{vertical-align:bottom}
+.cov thead th button{font:inherit;color:var(--qc);font-weight:600;background:none;border:0;padding:0;cursor:pointer;text-align:left;line-height:1.2}
+.cov tbody th button{font:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-align:left;white-space:nowrap}
+.cov td{padding:0}
+.cov td button{width:100%;min-width:44px;height:28px;border:0;border-radius:6px;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;background:rgba(var(--heat),calc(var(--w)*.5))}
+.cov td button:disabled{cursor:default;background:rgba(var(--heat),.03);color:transparent}
+.cov td button.picked{box-shadow:inset 0 0 0 2px var(--ink)}
+ol.take{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:t}
+ol.take li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:.88rem;line-height:1.45;counter-increment:t}
+ol.take li::before{content:counter(t);width:24px;height:24px;border-radius:50%;background:var(--qc);color:#fff;font-weight:700;font-size:.78rem;display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+/* details */
+.details{margin-top:28px}
+.details > h2{font-family:var(--serif);font-size:1.3rem;margin:0 0 4px}
+.details > p{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.paper{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--vc);border-radius:4px 10px 10px 4px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.paper.flash{box-shadow:0 0 0 2px var(--ink)}
+.pmeta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;color:var(--muted)}
+.pmeta b{color:var(--vc)}
+.paper h3{font-family:var(--serif);font-weight:600;font-size:1.02rem;line-height:1.3;margin:0}
+.paper h3 a{text-decoration:none}.paper h3 a:hover{text-decoration:underline}
+.authors{font-size:.8rem;color:var(--muted);margin:0}
+.qa{margin:0;font-size:.88rem}
+.qa.ask{font-family:var(--serif);font-style:italic;font-size:.93rem}
+.qa .k{font-weight:600}
+.ev{font-size:.75rem;color:var(--muted);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+.chip{font-size:.72rem;padding:2px 9px;border-radius:999px;background:rgba(var(--heat),.08)}
+.chip.q{background:transparent;border:1px solid var(--qc);color:var(--qc)}
+.empty{padding:24px;text-align:center;color:var(--muted);font-size:.9rem}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.86rem}
+footer p{max-width:84ch;margin:0 0 10px}
+@media (max-width:1060px){
+  .atlas{grid-template-columns:1fr}
+  .papers-panel{max-height:520px}
+  .lower{grid-template-columns:1fr}
+}
+@media (max-width:600px){
+  .wrap{padding:24px 14px 48px}
+  input[type=search]{min-width:0;width:100%}
+  .group.search{flex:1 1 100%}
+  .cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Map of interpretability in 2026</h1>
+      <p class="sub"><span>Questions</span> × <span>techniques</span> × <span>target objects</span> × <span>domains</span> × <span>papers</span></p>
+    </div>
+    <div class="venuebox"><span>Top-tier venues, 2026 (click to include or exclude)</span><div class="seg" id="venues"></div></div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Views">
+    <button role="tab" id="t-map" aria-selected="true" aria-controls="tab-map" class="tab">The map</button>
+    <button role="tab" id="t-explain" aria-selected="false" aria-controls="tab-explain" class="tab" tabindex="-1">Explained simply</button>
+    <button role="tab" id="t-plan" aria-selected="false" aria-controls="tab-plan" class="tab" tabindex="-1">Plan a study</button>
+  </div>
+  <div id="tab-map" role="tabpanel" aria-labelledby="t-map">
+  <p class="intro">30 interpretability papers from ICLR, CVPR, ACL and ICML 2026, traced from the question each one asks, through the technique it uses and the part of the model it inspects, to the domain it studies. Click any box to filter; clicks in different columns combine. Hover a paper to trace its path.</p>
+
+  <section class="controls" aria-label="Filters">
+    <div class="group"><span>Presented since</span><div class="seg" id="since"></div></div>
+    <div class="group search"><span>Search titles and findings</span><input type="search" id="q" placeholder="e.g. refusal, planning, hallucination"></div>
+  </section>
+  <div class="active" id="active" aria-live="polite"></div>
+
+  <div class="atlas">
+    <div class="panel mapwrap" id="mapwrap"><svg class="atlas-svg" id="svg" role="img" aria-label="Map linking interpretability questions to techniques, target objects and domains"></svg></div>
+    <aside class="panel papers-panel" id="pp">
+      <div class="pp-head"><h2>Example papers</h2><p id="ppcount"></p></div>
+      <div class="pp-list" id="pplist"></div>
+    </aside>
+  </div>
+
+  <div class="lower">
+    <section class="panel sec">
+      <h2>Technique × question coverage</h2>
+      <p>Number of papers using each technique for each question. Click a cell to filter the map.</p>
+      <div class="scroll"><table class="cov" id="cov"></table></div>
+    </section>
+    <section class="panel sec">
+      <h2>Key takeaways from 2026</h2>
+      <p>Based on all 30 papers in this map.</p>
+      <ol class="take" id="take"></ol>
+    </section>
+  </div>
+
+  <section class="details">
+    <h2>Paper details</h2>
+    <p id="detdesc"></p>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  </div>
+<div id="tab-explain" role="tabpanel" aria-labelledby="t-explain" hidden>
+  <section class="hero-ex panel">
+    <div class="hero-text">
+      <h2>Interpretability, in one minute</h2>
+      <p>A language model turns words into long lists of numbers, passes them through dozens of layers, and produces the next word. It works well, but nobody wrote down <em>how</em> it works.</p>
+      <p>Interpretability research opens the model up and looks at those hidden numbers to explain what it is doing. Every study makes three choices, and they are the columns of the map:</p>
+      <ol class="steps">
+        <li><b>Ask a question</b> about the model.</li>
+        <li><b>Pick a tool</b> to look inside.</li>
+        <li><b>Point it at a part</b> of the model: a layer, a neuron, a feature, a circuit.</li>
+      </ol>
+    </div>
+    <svg class="ill hero-svg" viewBox="0 0 700 250" role="img" aria-label="Animation: words flow into a model made of layers of units; activity ripples through the layers while a magnifying glass inspects them, and the model outputs the next word.">
+      <g class="chips">
+        <rect x="14" y="62" width="74" height="30" rx="15" class="chipbox"/><text x="51" y="82" class="chiptx">The</text>
+        <rect x="14" y="110" width="74" height="30" rx="15" class="chipbox"/><text x="51" y="130" class="chiptx">cat</text>
+        <rect x="14" y="158" width="74" height="30" rx="15" class="chipbox"/><text x="51" y="178" class="chiptx">sat</text>
+      </g>
+      <path d="M96 125 H150" class="flowline"/><path d="M144 119 L152 125 L144 131" class="arrowhead"/>
+      <rect x="160" y="18" width="380" height="214" rx="20" class="modelbox"/>
+      <text x="350" y="246" class="cap">the model: layers of units</text>
+      <g id="hero-layers"></g>
+      <g class="mag">
+        <circle cx="0" cy="0" r="36" class="magglass"/>
+        <path d="M26 26 L50 50" class="maghandle"/>
+      </g>
+      <path d="M548 125 H598" class="flowline"/><path d="M592 119 L600 125 L592 131" class="arrowhead"/>
+      <rect x="608" y="108" width="78" height="34" rx="17" class="chipbox out"/><text x="647" y="130" class="chiptx">on</text>
+    </svg>
+  </section>
+
+  <section class="ex-sec">
+    <h2>Seven questions, in plain words</h2>
+    <p class="ex-lead">Every paper on the map asks at least one of these. Each has a real example from 2026.</p>
+    <div class="qgrid" id="qgrid"></div>
+  </section>
+
+  <section class="ex-sec">
+    <h2>The toolkit, in pictures</h2>
+    <p class="ex-lead">These eight tools cover most of the 2026 papers. Each picture loops through what the tool does.</p>
+    <div class="tgrid" id="tgrid"></div>
+  </section>
+</div>
+
+<div id="tab-plan" role="tabpanel" aria-labelledby="t-plan" hidden>
+  <section class="plan-hero">
+    <h2>Plan an interpretability study</h2>
+    <p class="plan-lead">Choose one primary goal, define evidence of progress, and use the simplest method that can provide it.</p>
+    <p class="plan-note">This is a proposed project checklist, not a universal standard. The 2026 papers linked below pursue similar questions; they are examples of the topic, not rated against this checklist.</p>
+  </section>
+
+  <section class="ex-sec">
+    <h2>1. Choose one primary goal</h2>
+    <p class="ex-lead">Pick the goal your project is really about. It fills in the project statement at the bottom of the page. Scientific understanding is a valid goal without immediate deployment value; match the evidence to the claim.</p>
+    <div class="goals" id="goals" role="radiogroup" aria-label="Primary goal"></div>
+    <p class="src">Source: <a href="https://arxiv.org/html/2501.16496v1" target="_blank" rel="noopener">Open Problems in Mechanistic Interpretability</a></p>
+  </section>
+
+  <section class="ex-sec">
+    <h2>2 to 4. Work through the checklist</h2>
+    <p class="ex-lead">Tick items off as your plan covers them. Your ticks and statement are saved in this browser only.</p>
+    <div class="checks" id="checks"></div>
+    <p class="src">The process rules in section 4 adapt <a href="https://www.alignmentforum.org/posts/StENzDcD3kpfGJssR/a-pragmatic-vision-for-interpretability" target="_blank" rel="noopener">A Pragmatic Vision for Interpretability</a>. Practical usefulness and mechanistic truth require distinct evidence.</p>
+  </section>
+
+  <section class="ex-sec">
+    <h2>Project statement</h2>
+    <p class="ex-lead">Fill in the blanks. The finished sentence appears below, ready to copy.</p>
+    <div class="panel stmt">
+      <p class="stmt-form" id="stmtform"></p>
+      <div class="stmt-out">
+        <p id="stmtout"></p>
+        <div class="stmt-actions">
+          <button class="go" id="copystmt">Copy statement</button>
+          <button class="clear-btn" id="resetplan">Reset plan</button>
+          <span id="copymsg" class="copymsg" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+  <footer>
+    <p>Scope: main-track papers presented in 2026 at ICLR (April), CVPR (June), ACL (July) and ICML (July). Workshop papers are excluded. NeurIPS 2026 notified authors on 24 September, so it is not included yet; EMNLP 2026 comes later in the year.</p>
+    <p>This is a curated sample, not an exhaustive census. Questions, techniques, target objects and domains were assigned by reading each abstract; a paper can carry several of each, so it can appear on several lines. Most venues were confirmed on the official conference page or proceedings. Where a venue was confirmed only through another paper's citation, an award notice or a notes index, the card says so, and its tags are inferred from the title.</p>
+  </footer>
+</div>
+
+<script>
+const VENUES={ICLR:{label:"ICLR 2026",color:"var(--iclr)"},CVPR:{label:"CVPR 2026",color:"var(--cvpr)"},ACL:{label:"ACL 2026",color:"var(--acl)"},ICML:{label:"ICML 2026",color:"var(--icml)"}};
+const MONTHS={4:"Apr 2026",6:"Jun 2026",7:"Jul 2026"};
+const QS=[
+ ["REP","What is represented?","What concepts does the model represent, and in what form?","var(--q-rep)"],
+ ["MECH","How is it computed?","How is a specific behavior computed inside the network?","var(--q-mech)"],
+ ["PLAN","Does it plan ahead?","Does the model plan or reason without verbalizing it?","var(--q-plan)"],
+ ["DETECT","Can we catch failures?","Can internals flag errors, hallucinations, deception or attacks?","var(--q-detect)"],
+ ["CONTROL","Can we steer it?","Can we steer or improve behavior by acting on internals?","var(--q-control)"],
+ ["ORIGIN","Where did it come from?","What did training or fine-tuning change, and which data caused it?","var(--q-origin)"],
+ ["VALID","Can we trust the method?","Are interpretability methods themselves faithful and reliable?","var(--q-valid)"]
+];
+const TECH=[["SAE","Sparse autoencoders"],["TC","Transcoders & attribution graphs"],["NEU","Neuron-level circuits"],["PATCH","Causal interventions"],["STEER","Activation steering"],["PROBE","Probes & internal detectors"],["LENS","Logit / Patchscope readouts"],["DIFF","Model diffing"],["TDA","Training-data attribution"],["GEO","Representation geometry"],["ATTN","Attention-head analysis"],["THEORY","Training-dynamics theory"]];
+const TG=[["LAYERS","Layers & hidden states"],["DIRECTIONS","Directions & subspaces"],["FEATURES","Dictionary features"],["NEURONS","Individual neurons"],["HEADS","Attention heads"],["CIRCUITS","Circuits & attribution graphs"],["WEIGHTS","Weights & learning dynamics"],["WHOLE","Output structure (logits)"],["DATA","Training data"]];
+const DM=[["LLM","Language models"],["REASON","Reasoning models"],["VLM","Vision-language models"],["SPEECH","Speech models"],["SAFETY","Safety & alignment"],["FACT","Truthfulness & hallucination"]];
+const TAKE=[
+ ["CONTROL","Steering is the workhorse. Activation steering appears in 14 of 30 papers, and nearly all of them use it to control behavior: refusal, instruction following, personas, evaluation awareness."],
+ ["REP","Sparse autoencoders are now judged on usefulness, not just reconstruction: temporal SAEs, AbsTopK and concept-bottleneck SAEs each fix a specific failure of plain SAEs."],
+ ["PLAN","Circuit tracing moved into reasoning. Attribution graphs are used to catch faulty reasoning steps and to test whether models plan future words."],
+ ["VALID","Checking the tools became a research question: interventions that leave the natural distribution, probes trained off-policy, SAE neurons that are neither interpretable nor steerable."],
+ ["ORIGIN","More work links behavior back to training, through training-data attribution, model diffing and fine-tuning studies of emergent misalignment."],
+ ["DETECT","Scope widened beyond text-only LLMs, to vision-language models at CVPR, speech at ICML and reasoning models across venues."]
+];
+const P = [
+ {t:"Addressing divergent representations from causal interventions on neural networks",a:"Grant, Han, Tartaglini, Potts",tg:["LAYERS"],dm:["LLM"],v:"ICLR",tr:"Oral",m:4,tech:["PATCH"],q:["VALID"],
+  ask:"Do causal interventions push activations out of the model's natural distribution, making the resulting explanations unfaithful?",
+  find:"Common intervention techniques do shift representations off-distribution. Some shifts are harmless (in the behavioral null space), others activate hidden pathways; a counterfactual-latent loss keeps interventions closer to natural activations.",
+  url:"https://openreview.net/forum?id=cZrTMqYVL6"},
+ {t:"The Shape of Adversarial Influence: Characterizing LLM Latent Spaces with Persistent Homology",a:"Fay, García-Redondo, Wang, Dubossarsky, Monod",tg:["LAYERS"],dm:["LLM", "SAFETY"],v:"ICLR",tr:"Oral",m:4,tech:["GEO"],q:["DETECT","REP"],
+  ask:"How do prompt injection and backdoor attacks reshape the geometry and topology of a model's internal representation space?",
+  find:"Across six models (3.8B to 70B) and two attack types, adversarial inputs produce a consistent 'topological compression' signature that appears early in the network and discriminates attacks across layers.",
+  url:"https://iclr.cc/virtual/2026/oral/10006847"},
+ {t:"Verifying Chain-of-Thought Reasoning via Its Computational Graph",a:"Zhao, Koishekenov, Yang, Murray, Cancedda",tg:["CIRCUITS", "FEATURES"],dm:["REASON"],v:"ICLR",tr:"Oral",m:4,tech:["TC","PATCH"],q:["DETECT","CONTROL"],
+  ask:"Does the structure of a reasoning step's attribution graph reveal whether that step is wrong, and why?",
+  find:"Structural features of attribution graphs strongly predict reasoning errors, with domain-specific failure signatures; targeted interventions on transcoder features corrected some faulty reasoning.",
+  url:"https://iclr.cc/virtual/2026/oral/10010814"},
+ {t:"Temporal Sparse Autoencoders: Leveraging the Sequential Nature of Language for Interpretability",a:"Bhalla, Oesterling, Verdun, Lakkaraju, Calmon",tg:["FEATURES"],dm:["LLM"],v:"ICLR",tr:"Oral",m:4,tech:["SAE"],q:["REP"],
+  ask:"Can dictionary learning recover high-level semantic concepts instead of token-local, noisy ones?",
+  find:"A contrastive loss that encourages consistent feature activation across adjacent tokens separates semantic from syntactic features, with no loss in reconstruction quality.",
+  url:"https://iclr.cc/virtual/2026/oral/10008574"},
+ {t:"How Do Transformers Learn to Associate Tokens: Gradient Leading Terms Bring Mechanistic Interpretability",a:"Im, Oh, Fang, Li",tg:["WEIGHTS"],dm:["LLM"],v:"ICLR",tr:"Oral",m:4,tech:["THEORY"],q:["ORIGIN","MECH"],
+  ask:"How do semantic associations like 'bird' and 'flew' first form in attention-based language models?",
+  find:"A leading-term gradient approximation gives closed-form early-training weights built from three basis functions (bigram, token interchangeability, context), which closely match weights learned by real LLMs.",
+  url:"https://iclr.cc/virtual/2026/oral/10011067"},
+ {t:"Sequences of Logits Reveal the Low Rank Structure of Language Models",a:"Golowich, Liu, Shetty",tg:["WHOLE"],dm:["LLM"],v:"ICLR",tr:"Oral",m:4,tech:["GEO"],q:["REP"],
+  ask:"Do language models have an inherent low-dimensional structure that can be seen from their outputs alone?",
+  find:"Matrices of logits across prompts and responses have low approximate rank for many modern models; a response to one prompt can be generated as a linear combination of outputs on unrelated prompts.",
+  url:"https://iclr.cc/virtual/2026/oral/10008134"},
+ {t:"Mechanistic Interpretability of Code Correctness in LLMs via Sparse Autoencoders",a:"Tahimic, Cheng",tg:["FEATURES", "DIRECTIONS"],dm:["LLM"],v:"ICLR",tr:"Poster",m:4,tech:["SAE","STEER"],q:["DETECT","CONTROL"],
+  ask:"How does a model internally represent whether the code it is writing is correct?",
+  find:"SAE directions on Gemma-2 separate into detection directions that act as error alarms and steering directions that enable targeted corrections.",
+  url:"https://arxiv.org/pdf/2510.02917"},
+ {t:"AbsTopK: Rethinking Sparse Autoencoders for Bidirectional Features",a:"ICLR 2026 authors",tg:["FEATURES"],dm:["LLM"],v:"ICLR",tr:"Poster",m:4,tech:["SAE","STEER"],q:["REP","CONTROL"],
+  ask:"Can an unsupervised SAE capture concepts with two opposing poles in a single feature?",
+  find:"The AbsTopK variant improves reconstruction and interpretability and matches or beats supervised difference-in-means directions on probing and steering tasks.",
+  url:"https://proceedings.iclr.cc/paper_files/paper/2026/file/527360cae239e340eb056e32b01f1caf-Paper-Conference.pdf"},
+ {t:"Latent Planning Emerges with Scale",a:"Hanna, Ameisen",tg:["CIRCUITS", "FEATURES"],dm:["LLM"],v:"ICLR",tr:"Poster",m:4,tech:["TC","STEER"],q:["PLAN"],
+  ask:"Do LLMs hold internal representations of a future word that shape the text leading up to it?",
+  find:"In Qwen-3 (0.6B to 14B), latent planning grows with scale: features for a planned word like 'accountant' cause 'an' instead of 'a'. Rhyming circuits exist, but even large models show no backward planning in couplets.",
+  url:"https://arxiv.org/pdf/2604.12493"},
+ {t:"What's the Plan? Metrics for Implicit Planning in LLMs and Their Application to Rhyme Generation and Question Answering",a:"Maar, Paperno, McDougall, Nanda",tg:["LAYERS"],dm:["LLM"],v:"ICLR",tr:"Poster",m:4,tech:["STEER","PATCH"],q:["PLAN","VALID"],
+  ask:"Can implicit planning be measured with methods much simpler than cross-layer transcoders?",
+  find:"Proposes lightweight planning metrics that scale easily across many models, applied to rhyme generation and question answering.",
+  url:"https://arxiv.org/pdf/2601.20164"},
+ {t:"Narrow Finetuning Leaves Clearly Readable Traces in Activation Differences",a:"Minder, Dumas, Slocum, Casademunt, Holmes, West, Nanda",tg:["DIRECTIONS"],dm:["LLM", "SAFETY"],v:"ICLR",tr:"Poster",m:4,tech:["DIFF","LENS","STEER"],q:["ORIGIN","VALID"],
+  ask:"What can activation differences between a base and a finetuned model reveal about the finetuning data?",
+  find:"Differences on the first tokens of random text, read with Patchscope and steering, recover the format and content of the finetuning data and boost an interpretability agent. It warns that narrow 'model organisms' may be unrealistic proxies.",
+  url:"https://www.iclr.cc/virtual/2026/poster/10007195"},
+ {t:"Steering Evaluation-Aware Language Models To Act Like They Are Deployed",a:"ICLR 2026 authors",tg:["DIRECTIONS"],dm:["SAFETY"],v:"ICLR",tr:"Poster",m:4,tech:["STEER"],q:["CONTROL"],
+  ask:"Can a steering vector suppress a model's awareness that it is being evaluated?",
+  find:"On a model trained to be evaluation-aware, adding a steering vector makes it behave as if deployed during evaluation.",
+  url:"https://iclr.cc/virtual/2026/poster/10011825"},
+ {t:"Activation Steering with a Feedback Controller",a:"ICLR 2026 authors",tg:["DIRECTIONS"],dm:["SAFETY"],v:"ICLR",tr:"Poster",m:4,tech:["STEER"],q:["CONTROL"],
+  ask:"Can control theory make activation steering for refusal more reliable than difference-in-means?",
+  find:"PID-based steering beats difference-in-means, ITI and RePE baselines on attack-success reduction across Gemma2, LLaMA3 and Qwen2.5 with little cost to general ability.",
+  url:"https://proceedings.iclr.cc/paper_files/paper/2026/file/fa5617c176e76fee83f3f9947fdf9f3f-Paper-Conference.pdf"},
+ {t:"Enhancing Instruction Following of LLMs via Activation Steering with Dynamic Rejection",a:"ICLR 2026 authors",tg:["DIRECTIONS"],dm:["LLM"],v:"ICLR",tr:"Poster",m:4,tech:["STEER"],q:["CONTROL"],
+  ask:"How can steering strength adapt token by token without degrading output quality?",
+  find:"DIRECTER pairs steering with a plausibility-guided decoding loop that compares steered and original output distributions at each step.",
+  url:"https://iclr.cc/virtual/2026/poster/10009750"},
+
+ {t:"Interpretable and Steerable Concept Bottleneck Sparse Autoencoders",a:"Kulkarni, Weng, Narayanaswamy, Liu, Sakla, Thopalli",tg:["FEATURES"],dm:["VLM"],v:"CVPR",tr:"Poster",m:6,tech:["SAE","STEER"],q:["REP","CONTROL","VALID"],
+  ask:"Are SAE features in vision-language models actually interpretable and steerable, and do they contain the concepts users want?",
+  find:"Most SAE neurons score low on interpretability, steerability or both, and desired concepts are often missing. CB-SAE prunes weak neurons and adds a user-specified concept bottleneck that steers LLaVA and UnCLIP.",
+  url:"https://cvpr.thecvf.com/virtual/2026/poster/37080"},
+ {t:"CausalLens: Sensitivity-Guided Multi-Head Causal Intervention for Hallucination Mitigation in Large Vision-Language Models",a:"CVPR 2026 authors",tg:["HEADS"],dm:["VLM", "FACT"],v:"CVPR",tr:"Poster",m:6,tech:["ATTN","PATCH"],q:["CONTROL","MECH"],
+  ask:"Which attention heads carry reliable visual grounding, and can boosting them reduce hallucination?",
+  find:"Decomposes heads into visual, textual and system-prompt pathways, finds visually reliable heads with a sensitivity measure, and adjusts their mid-layer contributions in a single training-free pass.",
+  url:"https://cvpr.thecvf.com/virtual/2026/poster/37547"},
+
+ {t:"Mapping the Circumplex of Affect: Geometric Analysis of Emotion Representations via Hyperspherical Contrastive Learning",a:"Yamauchi, Aizawa",tg:["LAYERS"],dm:["LLM"],v:"ACL",tr:"Best Theme Paper",m:7,tech:["GEO"],q:["REP"],
+  ask:"Do emotion representations inside language models follow the circumplex geometry from affective psychology?",
+  find:"Won ACL 2026's Best Theme Paper (explainability theme). Question and method here are inferred from the title.",
+  url:"https://www.eurekalert.org/news-releases/1137258",ev:"Venue from award announcement"},
+ {t:"Understanding Emergent Misalignment via Feature Superposition Geometry",a:"Minegishi, Furuta, Kojima, Iwasawa, Matsuo",tg:["FEATURES"],dm:["SAFETY"],v:"ACL",tr:"Main",m:7,tech:["GEO","SAE"],q:["ORIGIN"],
+  ask:"Why does narrow fine-tuning on flawed data make a model broadly misaligned?",
+  find:"Explains emergent misalignment through the geometry of superposed features. Question and method are inferred from the title.",
+  url:"https://arxiv.org/pdf/2608.11025",ev:"Venue confirmed via citation in another paper"},
+ {t:"How Context Shapes Truth: Geometric Transformations of Statement-Level Truth Representations in LLMs",a:"Adarsh, Maistro, Lioma",tg:["DIRECTIONS"],dm:["FACT"],v:"ACL",tr:"Main",m:7,tech:["PROBE","GEO"],q:["REP","DETECT"],
+  ask:"How does surrounding context transform the internal 'truth direction' for a statement?",
+  find:"Studies geometric transformations of truth representations under context. Question and method are inferred from the title.",
+  url:"https://arxiv.org/pdf/2609.10739",ev:"Venue confirmed via citation in another paper"},
+ {t:"The Impact of Off-Policy Training Data on Probe Generalisation",a:"Kirch, Dower, Skapars, Yannakoudakis, Lubana, Krasheninnikov",tg:["DIRECTIONS"],dm:["SAFETY"],v:"ACL",tr:"Main",m:7,tech:["PROBE"],q:["VALID","DETECT"],
+  ask:"Do probes trained on text the model didn't generate itself still work on the model's own outputs?",
+  find:"Examines how off-policy training data affects probe generalisation. Question and method are inferred from the title.",
+  url:"https://arxiv.org/pdf/2609.10739",ev:"Venue confirmed via citation in another paper"},
+
+ {t:"Mechanistic Data Attribution: Tracing the Training Origins of Interpretable LLM Units",a:"ICML 2026 authors",tg:["HEADS", "DATA"],dm:["LLM"],v:"ICML",tr:"Oral",m:7,tech:["TDA","PATCH"],q:["ORIGIN","MECH"],
+  ask:"Which training samples cause specific circuits, such as induction heads, to form?",
+  find:"Influence functions trace interpretable units to training data in Pythia; removing or augmenting targeted samples changes induction-head formation and in-context learning together, and augmentation speeds circuit convergence.",
+  url:"https://icml.cc/virtual/2026/oral/71094"},
+ {t:"Less is Enough: Synthesizing Diverse Data in LLM Feature Space with Sparse Autoencoders",a:"Li, Wu, Li, Hu, Liu",tg:["FEATURES", "DATA"],dm:["LLM"],v:"ICML",tr:"Oral",m:7,tech:["SAE"],q:["CONTROL"],
+  ask:"Can interpretable features measure post-training data diversity better than text metrics, and guide what data to generate?",
+  find:"Feature Activation Coverage uses an SAE to find features missing from a seed set, then synthesizes data for them, improving diversity and downstream results on instruction following, toxicity detection, reward modeling and steering.",
+  url:"https://icml.cc/virtual/2026/events/oral"},
+ {t:"Language Model Circuits Are Sparse in the Neuron Basis",a:"Arora, Wu, Steinhardt, Schwettmann",tg:["NEURONS", "CIRCUITS"],dm:["LLM", "FACT"],v:"ICML",tr:"Poster",m:7,tech:["NEU","STEER"],q:["MECH","VALID"],
+  ask:"Do we really need SAEs to find interpretable circuits, or are raw neurons enough?",
+  find:"On a multi-hop city to state to capital task, small sets of neurons encode individual reasoning steps and can be steered to change the output, without training any extra dictionary.",
+  url:"https://icml.cc/virtual/2026/poster/64312"},
+ {t:"Sparse Autoencoders for Interpretable Emotion Control in Text-to-Speech",a:"ICML 2026 authors",tg:["FEATURES"],dm:["SPEECH"],v:"ICML",tr:"Poster",m:7,tech:["SAE","STEER"],q:["REP","CONTROL"],
+  ask:"How do LLM-based speech models internally represent the emotion they voice?",
+  find:"Emotion is distributed over several sparse features tied to acoustic attributes such as pitch; steering those features matches or beats global steering and TTS baselines.",
+  url:"https://icml.cc/virtual/2026/poster/65029"},
+ {t:"Sparse Autoencoders are Topic Models",a:"ICML 2026 authors",tg:["FEATURES"],dm:["LLM", "VLM"],v:"ICML",tr:"Poster",m:7,tech:["SAE"],q:["REP"],
+  ask:"Can SAE features serve as themes for describing a document or image collection?",
+  find:"On news, reviews, tweets and image collections, the SAE-based approach finds clearer, more interpretable themes than existing topic models.",
+  url:"https://icml.cc/virtual/2026/poster/62444"},
+ {t:"Steer Like the LLM: Activation Steering that Mimics Prompting",a:"ICML 2026 authors",tg:["DIRECTIONS"],dm:["LLM"],v:"ICML",tr:"Poster",m:7,tech:["STEER"],q:["CONTROL"],
+  ask:"Can steering reproduce what prompting does, at the level of individual positions?",
+  find:"Position-specific steering coefficients trained to imitate prompt interventions outperform standard steering on persona and instruction-following tasks.",
+  url:"https://icml.cc/virtual/2026/poster/66813"},
+ {t:"Automatic Layer Selection for Hallucination Detection",a:"ICML 2026 authors",tg:["LAYERS"],dm:["FACT"],v:"ICML",tr:"Poster",m:7,tech:["PROBE"],q:["DETECT"],
+  ask:"Which layer's hidden states should a hallucination detector read from?",
+  find:"Builds on evidence that hallucination signals are stronger in intermediate layers than the last, and selects the layer automatically.",
+  url:"https://icml.cc/virtual/2026/poster/61195"},
+ {t:"Harnessing Reasoning Trajectories for Hallucination Detection via Answer-agreement Representation Shaping",a:"ICML 2026 authors",tg:["LAYERS"],dm:["REASON", "FACT"],v:"ICML",tr:"Poster",m:7,tech:["PROBE","PATCH"],q:["DETECT"],
+  ask:"Can latent perturbations at the end of a reasoning trace expose hallucinated answers in reasoning models?",
+  find:"Perturbing latent states to decode counterfactual answers and training a contrastive head on answer agreement lifts TruthfulQA AUROC from about 67 to 87.",
+  url:"https://en.papernotes.org/ICML2026/hallucination/harnessing_reasoning_trajectories_for_hallucination_detection_via_answer-agreeme/",ev:"Venue from a paper-notes index"},
+ {t:"In-Training Defenses Against Emergent Misalignment in Language Models",a:"ICML 2026 authors",tg:["DIRECTIONS"],dm:["SAFETY"],v:"ICML",tr:"Poster",m:7,tech:["STEER"],q:["CONTROL","ORIGIN"],
+  ask:"Can fine-tuning API providers prevent narrow fine-tunes from making a model broadly misaligned?",
+  find:"Compares five in-training regularizers, including KL to a safe model, feature-space distance and preventive steering with an 'evil' persona vector.",
+  url:"https://icml.cc/virtual/2026/poster/64303"},
+ {t:"The Assistant Axis: Situating and Stabilizing the Default Persona of Language Models",a:"Lu, Gallagher, Michala, Fish, Lindsey",tg:["DIRECTIONS"],dm:["LLM", "SAFETY"],v:"ICML",tr:"Main",m:7,tech:["GEO","STEER"],q:["REP","CONTROL"],
+  ask:"Where does the default Assistant persona sit in activation space, and can it be kept stable?",
+  find:"Locates a persona axis and uses it to stabilize the default persona. Question and method are inferred from the title.",
+  url:"https://arxiv.org/pdf/2608.11025",ev:"Venue confirmed via citation in another paper"}
+];
+
+P.forEach((p,i)=>p.i=i);
+const state={venues:new Set(Object.keys(VENUES)),since:4,text:"",f:{q:null,tech:null,tg:null,dm:null}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const nameOf=(arr,k)=>arr.find(x=>x[0]===k)[1];
+const qColor=k=>QS.find(x=>x[0]===k)[3];
+const COLS=[{key:"q",arr:QS,field:"q",title:"Question",sub:"What are we trying to answer?"},
+            {key:"tech",arr:TECH,field:"tech",title:"Technique",sub:"How do we answer it?"},
+            {key:"tg",arr:TG,field:"tg",title:"Target object",sub:"What part of the model is inspected?"},
+            {key:"dm",arr:DM,field:"dm",title:"Domain",sub:"Where is it applied?"}];
+
+function inPool(p){
+  if(!state.venues.has(p.v)||p.m<state.since) return false;
+  if(state.text){const s=state.text.toLowerCase();if(!(p.t+" "+p.ask+" "+p.find+" "+p.a).toLowerCase().includes(s)) return false;}
+  return true;
+}
+const hasF=()=>Object.values(state.f).some(Boolean);
+function matches(p){return COLS.every(c=>!state.f[c.key]||p[c.field].includes(state.f[c.key]));}
+function toggleF(k,v){state.f[k]=state.f[k]===v?null:v;render();}
+
+function renderControls(){
+  const vb=$("venues");vb.innerHTML="";
+  Object.entries(VENUES).forEach(([k,v])=>{
+    const b=document.createElement("button");b.className="toggle";b.style.setProperty("--vc",v.color);
+    b.setAttribute("aria-pressed",state.venues.has(k));b.innerHTML=`<span class="sw"></span>${v.label}`;
+    b.onclick=()=>{state.venues.has(k)?state.venues.delete(k):state.venues.add(k);render();};vb.appendChild(b);
+  });
+  const sb=$("since");sb.innerHTML="";
+  [[4,"All of 2026"],[6,"June onward"],[7,"July onward"]].forEach(([m,l])=>{
+    const b=document.createElement("button");b.className="toggle"+(state.since===m?" on":"");b.setAttribute("aria-pressed",state.since===m);
+    b.textContent=l;b.onclick=()=>{state.since=m;render();};sb.appendChild(b);
+  });
+  const ab=$("active");
+  const bits=COLS.filter(c=>state.f[c.key]).map(c=>`<button class="fchip" data-k="${c.key}"><b>${c.title}:</b> ${esc(nameOf(c.arr,state.f[c.key]))}<span aria-label="remove">✕</span></button>`);
+  ab.innerHTML=bits.length?`<span class="lab">Showing papers that match</span>${bits.join("")}<button class="fchip" id="clr">Clear all</button>`:`<span class="lab">No column filters. Click a box in the map or a cell in the coverage table.</span>`;
+  ab.querySelectorAll("button[data-k]").forEach(b=>b.onclick=()=>{state.f[b.dataset.k]=null;render();});
+  const c=$("clr");if(c)c.onclick=()=>{state.f={q:null,tech:null,tg:null,dm:null};render();};
+}
+
+function wrapText(s,n){const w=s.split(" ");const out=[];let cur="";w.forEach(x=>{if((cur+" "+x).trim().length>n){out.push(cur.trim());cur=x;}else cur+=" "+x;});if(cur.trim())out.push(cur.trim());return out;}
+
+let edgeEls=[],nodeEls=[];
+function renderAtlas(pool){
+  const NS="http://www.w3.org/2000/svg",svg=$("svg");svg.innerHTML="";
+  const mk=(t,a,par)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(par||svg).appendChild(e);return e;};
+  const W=1000,top=64,H=700;
+  const geo=[{x:0,w:215,h:70},{x:275,w:205,h:38},{x:540,w:200,h:44},{x:800,w:200,h:48}];
+  // node counts (distinct papers)
+  const cols=COLS.map((c,ci)=>{
+    let nodes=c.arr.map(a=>({k:a[0],label:a[1],full:a[2],color:a[3],papers:pool.filter(p=>p[c.field].includes(a[0]))}));
+    return {c,ci,nodes};
+  });
+  // edges between adjacent columns, colored by question
+  const E={};
+  pool.forEach(p=>p.q.forEach(q=>{
+    const chains=[[q],p.tech,p.tg,p.dm];
+    for(let ci=0;ci<3;ci++){
+      const froms=ci===0?[q]:chains[ci];
+      froms.forEach(a=>chains[ci+1].forEach(b=>{const k=ci+"|"+a+"|"+b+"|"+q;(E[k]=E[k]||{ci,a,b,q,papers:new Set()}).papers.add(p.i);}));
+    }
+  }));
+  // order columns 2..4 by barycenter of previous column
+  for(let ci=1;ci<4;ci++){
+    const prev=Object.fromEntries(cols[ci-1].nodes.map((n,i)=>[n.k,i]));
+    cols[ci].nodes.forEach((n,i)=>{
+      let s=0,w=0;Object.values(E).forEach(e=>{if(e.ci===ci-1&&e.b===n.k){s+=prev[e.a]*e.papers.size;w+=e.papers.size;}});
+      n.bc=w?s/w:1e3+i;
+    });
+    cols[ci].nodes.sort((a,b)=>a.bc-b.bc);
+  }
+  // positions
+  cols.forEach(col=>{
+    const g=geo[col.ci],n=col.nodes.length,gap=(H-n*g.h)/Math.max(n-1,1);
+    col.nodes.forEach((nd,i)=>{nd.x=g.x;nd.w=g.w;nd.h=g.h;nd.y=top+i*(g.h+gap);});
+    col.map=Object.fromEntries(col.nodes.map(nd=>[nd.k,nd]));
+  });
+  svg.setAttribute("viewBox",`0 0 ${W} ${top+H+8}`);
+  // headers
+  cols.forEach(col=>{
+    const g=geo[col.ci];
+    mk("text",{x:g.x+2,y:22,class:"colh"}).textContent=col.c.title;
+    mk("text",{x:g.x+2,y:40,class:"colsub"}).textContent=col.c.sub;
+  });
+  // ports: spread edges across node height, sorted by other end's y
+  const edges=Object.values(E);
+  const outs={},ins={};
+  edges.forEach(e=>{const A=cols[e.ci].map[e.a],B=cols[e.ci+1].map[e.b];e.A=A;e.B=B;(outs[e.ci+"|"+e.a]=outs[e.ci+"|"+e.a]||[]).push(e);(ins[(e.ci+1)+"|"+e.b]=ins[(e.ci+1)+"|"+e.b]||[]).push(e);});
+  const qi=Object.fromEntries(QS.map((q,i)=>[q[0],i]));
+  Object.values(outs).forEach(list=>{list.sort((x,y)=>x.B.y-y.B.y||qi[x.q]-qi[y.q]);list.forEach((e,i)=>{e.y0=e.A.y+e.A.h*(0.18+0.64*(list.length>1?i/(list.length-1):.5));});});
+  Object.values(ins).forEach(list=>{list.sort((x,y)=>x.A.y-y.A.y||qi[x.q]-qi[y.q]);list.forEach((e,i)=>{e.y1=e.B.y+e.B.h*(0.18+0.64*(list.length>1?i/(list.length-1):.5));});});
+  const eg=mk("g",{});
+  const sel=hasF();
+  svg.classList.toggle("sel",sel);
+  edgeEls=[];
+  edges.sort((a,b)=>a.papers.size-b.papers.size).forEach(e=>{
+    const x0=e.A.x+e.A.w,x1=e.B.x,mx=(x0+x1)/2;
+    const n=e.papers.size;
+    const hi=sel&&[...e.papers].some(i=>matches(P[i]));
+    const path=mk("path",{d:`M${x0},${e.y0} C${mx},${e.y0} ${mx},${e.y1} ${x1},${e.y1}`,class:"edge"+(hi?" hi":""),stroke:qColor(e.q),"stroke-width":Math.min(1.4+1.5*n,9)},eg);
+    path._papers=e.papers;
+    mk("title",{},path).textContent=`${e.A.label} → ${e.B.label}: ${n} paper${n>1?"s":""} (${nameOf(QS,e.q)})`;
+    edgeEls.push(path);
+  });
+  // nodes
+  nodeEls=[];
+  cols.forEach(col=>col.nodes.forEach(nd=>{
+    const cnt=nd.papers.length;
+    const hi=sel&&nd.papers.some(matches);
+    const picked=state.f[col.c.key]===nd.k;
+    const g=mk("g",{class:"nd"+(cnt?"":" zero")+(hi?" hi":"")+(picked?" picked":""),tabindex:cnt?0:-1,role:"button","aria-pressed":picked,"aria-label":`${col.c.title}: ${nd.label}, ${cnt} papers`});
+    g._papers=new Set(nd.papers.map(p=>p.i));
+    const isQ=col.ci===0;
+    const r=mk("rect",{x:nd.x,y:nd.y,width:nd.w,height:nd.h,rx:isQ?12:9,class:"box"},g);
+    if(isQ){r.setAttribute("style",`fill:color-mix(in srgb, ${nd.color} calc(var(--tint)*100%), var(--surface));stroke:color-mix(in srgb, ${nd.color} 45%, transparent)`);}
+    const fo=mk("foreignObject",{x:nd.x,y:nd.y,width:nd.w,height:nd.h},g);
+    fo.innerHTML=isQ
+      ?`<div xmlns="http://www.w3.org/1999/xhtml" class="qlab" style="--qc:${nd.color}"><b>${esc(nd.label)}</b><span>${esc(nd.full)}</span></div>`
+      :`<div xmlns="http://www.w3.org/1999/xhtml" class="nlab">${esc(nd.label)}</div>`;
+    mk("text",{x:nd.x+nd.w-10,y:nd.y+nd.h/2+4,"text-anchor":"end",class:"ncount"},g).textContent=cnt;
+    if(isQ) mk("title",{},g).textContent=nd.full;
+    const act=()=>{if(cnt)toggleF(col.c.key,nd.k);};
+    g.addEventListener("click",act);
+    g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();act();}});
+    nodeEls.push(g);
+  }));
+}
+
+function tracePaper(i){
+  const svg=$("svg");
+  svg.classList.toggle("hp",i!=null);
+  edgeEls.forEach(e=>e.classList.toggle("on",i!=null&&e._papers.has(i)));
+  nodeEls.forEach(n=>n.classList.toggle("on",i!=null&&n._papers.has(i)));
+}
+
+function renderPanel(list){
+  $("ppcount").textContent=`${list.length} paper${list.length===1?"":"s"}${hasF()?" match the current selection":""}. Hover to trace, click for details.`;
+  const box=$("pplist");
+  if(!list.length){box.innerHTML=`<div class="empty">No papers match. Remove a filter above or add a venue back.</div>`;return;}
+  box.innerHTML=list.map(p=>`<button class="pi" data-i="${p.i}">
+      <span class="qdots">${p.q.map(q=>`<i style="--qc:${qColor(q)}" title="${esc(nameOf(QS,q))}"></i>`).join("")}</span>
+      <span class="tt">${esc(p.t)}</span>
+      <span class="vb" style="--vc:${VENUES[p.v].color}">${p.v}<small>${p.tr}</small></span>
+      <span class="how">${esc(p.tech.map(k=>nameOf(TECH,k)).join(", "))} on ${esc(p.tg.map(k=>nameOf(TG,k).toLowerCase()).join(", "))}</span>
+    </button>`).join("");
+  box.querySelectorAll(".pi").forEach(b=>{
+    const i=+b.dataset.i;
+    b.addEventListener("mouseenter",()=>tracePaper(i));b.addEventListener("mouseleave",()=>tracePaper(null));
+    b.addEventListener("focus",()=>tracePaper(i));b.addEventListener("blur",()=>tracePaper(null));
+    b.addEventListener("click",()=>{const c=$("card-"+i);if(c){c.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1600);}});
+  });
+}
+
+function renderCoverage(pool){
+  let max=1;const cnt={};
+  TECH.forEach(([t])=>QS.forEach(([q])=>{const n=pool.filter(p=>p.tech.includes(t)&&p.q.includes(q)).length;cnt[t+q]=n;max=Math.max(max,n);}));
+  let h="<thead><tr><th>Technique</th>"+QS.map(([k,l,f,c])=>`<th><button data-q="${k}" style="--qc:${c}" title="${esc(f)}">${esc(l)}</button></th>`).join("")+"</tr></thead><tbody>";
+  TECH.forEach(([t,l])=>{
+    h+=`<tr><th><button data-t="${t}">${esc(l)}</button></th>`;
+    QS.forEach(([q,ql])=>{const n=cnt[t+q];const picked=state.f.tech===t&&state.f.q===q;
+      h+=`<td><button style="--w:${n?(0.25+0.75*n/max):0}" ${n?"":"disabled"} class="${picked?"picked":""}" data-c="${t}|${q}" aria-label="${esc(l)} for ${esc(ql)}: ${n} papers">${n||""}</button></td>`;});
+    h+="</tr>";
+  });
+  $("cov").innerHTML=h+"</tbody>";
+  $("cov").querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>{const [t,q]=b.dataset.c.split("|");
+    if(state.f.tech===t&&state.f.q===q){state.f.tech=null;state.f.q=null;}else{state.f.tech=t;state.f.q=q;}render();});
+  $("cov").querySelectorAll("button[data-q]").forEach(b=>b.onclick=()=>toggleF("q",b.dataset.q));
+  $("cov").querySelectorAll("button[data-t]").forEach(b=>b.onclick=()=>toggleF("tech",b.dataset.t));
+}
+
+function renderCards(list){
+  $("detdesc").textContent=hasF()?"Papers matching the current selection, newest first.":"All papers matching the venue, date and search filters, newest first.";
+  $("cards").innerHTML=list.length?list.map(p=>`
+    <article class="paper" id="card-${p.i}" style="--vc:${VENUES[p.v].color}">
+      <div class="pmeta"><b>${VENUES[p.v].label}</b><span>${p.tr}</span><span>${MONTHS[p.m]}</span></div>
+      <h3><a href="${p.url}" target="_blank" rel="noopener">${esc(p.t)}</a></h3>
+      <p class="authors">${esc(p.a)}</p>
+      <p class="qa ask">${esc(p.ask)}</p>
+      <p class="qa"><span class="k">Finding.</span> ${esc(p.find)}</p>
+      ${p.ev?`<p class="ev">${p.ev}</p>`:""}
+      <div class="chips">${p.q.map(k=>`<span class="chip q" style="--qc:${qColor(k)}">${esc(nameOf(QS,k))}</span>`).join("")}${p.tech.map(k=>`<span class="chip">${esc(nameOf(TECH,k))}</span>`).join("")}${p.tg.map(k=>`<span class="chip">${esc(nameOf(TG,k))}</span>`).join("")}${p.dm.map(k=>`<span class="chip">${esc(nameOf(DM,k))}</span>`).join("")}</div>
+    </article>`).join(""):`<div class="empty">No papers match these filters.</div>`;
+}
+
+function render(){
+  renderControls();
+  const pool=P.filter(inPool);
+  const list=pool.filter(matches).sort((a,b)=>b.m-a.m||a.v.localeCompare(b.v));
+  renderAtlas(pool);
+  renderPanel(list);
+  renderCoverage(pool);
+  renderCards(list);
+  const mh=$("mapwrap").getBoundingClientRect().height;
+  if(mh&&innerWidth>1060) $("pp").style.setProperty("--ph",mh+"px");
+}
+$("take").innerHTML=TAKE.map(([q,t])=>`<li style="--qc:${qColor(q)}">${esc(t)}</li>`).join("");
+$("q").addEventListener("input",e=>{state.text=e.target.value.trim();render();});
+addEventListener("resize",()=>{const mh=$("mapwrap").getBoundingClientRect().height;$("pp").style.setProperty("--ph",innerWidth>1060?mh+"px":"520px");});
+render();
+
+/* ---------- explainer tab ---------- */
+const QPLAIN={
+ REP:["What does the model know, and how is it stored?","Emotion concepts inside language models were mapped as a geometric shape, echoing the circumplex model of affect from psychology.","ACL Best Theme Paper"],
+ MECH:["What steps does it take to reach an answer?","For 'which city → which state → which capital', small groups of neurons each handle one hop.","ICML"],
+ PLAN:["Does it think ahead before it writes?","Bigger models already 'know' they will write accountant, so they choose 'an' over 'a' first.","ICLR"],
+ DETECT:["Can we tell from the inside when it is going wrong?","The shape of the internal computation graph flags reasoning steps that are about to be wrong.","ICLR oral"],
+ CONTROL:["Can we nudge its behavior by adjusting its insides?","Adding a steering direction made a model stop acting as if it knew it was being tested.","ICLR"],
+ ORIGIN:["What did training teach it, and which data taught it?","Removing specific training texts changed when copying circuits (induction heads) formed.","ICML oral"],
+ VALID:["Are our inspection tools telling the truth?","Common 'swap-in' experiments can push a model into states it never visits naturally.","ICLR oral"]
+};
+const TOOLS=[
+ {k:"PROBE",name:"Probes",cls:"i-probe",what:"A tiny classifier reads the model's hidden numbers and answers one yes-or-no question, such as \u201cdoes the model think this statement is true?\u201d",like:"a thermometer. It reads a signal without changing anything."},
+ {k:"SAE",name:"Sparse autoencoders",cls:"i-sae",what:"Splits one messy list of numbers into thousands of simple \u201cfeatures\u201d. Only a few switch on at a time, and each ideally means one thing.",like:"unmixing a smoothie back into its fruits."},
+ {k:"STEER",name:"Activation steering",cls:"i-steer",what:"Adds a chosen direction to the model's hidden state to push its behavior, for example toward refusing a harmful request.",like:"a gentle hand on the steering wheel."},
+ {k:"PATCH",name:"Causal interventions",cls:"i-patch",what:"Copies one internal piece from one run into another. If the answer changes, that piece carried the information.",like:"swapping one part between two engines to find which part matters."},
+ {k:"TC",name:"Attribution graphs",cls:"i-circ",what:"Traces how influence flows from input words, through internal features, to the word the model outputs.",like:"a wiring diagram drawn live for one answer."},
+ {k:"DIFF",name:"Model diffing",cls:"i-diff",what:"Compares a model before and after fine-tuning. The biggest internal differences reveal what the fine-tuning taught.",like:"spot-the-difference between two photos."},
+ {k:"TDA",name:"Training-data attribution",cls:"i-tda",what:"Traces an internal mechanism back to the specific training texts that built it.",like:"finding which lessons gave a student a habit."},
+ {k:"GEO",name:"Representation geometry",cls:"i-geo",what:"Looks at the shape the model's internal points make. Related ideas sit close together, and some form lines or circles.",like:"a map where similar ideas are neighbors."}
+];
+const ILL={
+ PROBE:`<svg class="ill i-probe" viewBox="0 0 260 150" role="img" aria-label="A probe reads a layer of units and a gauge needle swings between no and yes.">
+   ${[0,1,2,3,4,5].map(i=>`<circle class="unit" cx="40" cy="${25+i*20}" r="7" style="animation-delay:${i*.12}s"/>`).join("")}
+   <text x="40" y="146" class="lbl mid">one layer</text>
+   ${[0,1,2,3,4,5].map(i=>`<path class="faint" d="M50 ${25+i*20} C95 ${25+i*20} 95 100 122 104"/>`).join("")}
+   <path d="M120 112 A50 50 0 0 1 220 112" fill="none" stroke="var(--line)" stroke-width="8" stroke-linecap="round"/>
+   <path d="M120 112 A50 50 0 0 1 145 69" fill="none" stroke="var(--q-detect)" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+   <path d="M195 69 A50 50 0 0 1 220 112" fill="none" stroke="var(--q-control)" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+   <line class="needle" x1="170" y1="112" x2="170" y2="70" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+   <circle cx="170" cy="112" r="6" fill="var(--ink)"/>
+   <text x="118" y="132" class="lbl">false</text><text x="222" y="132" class="lbl" text-anchor="end">true</text>
+   <text x="170" y="146" class="lbl mid ink">probe reading</text></svg>`,
+ SAE:`<svg class="ill i-sae" viewBox="0 0 260 150" role="img" aria-label="A dense mixed vector is split into a grid of features where one at a time lights up with a label.">
+   ${[0,1,2,3,4,5,6,7].map(i=>`<rect x="18" y="${14+i*14}" width="30" height="12" rx="2" fill="var(--${["q-rep","q-mech","q-plan","q-detect","q-control","q-origin","q-valid","q-rep"][i]})" opacity="${[.5,.3,.7,.4,.6,.35,.55,.25][i]}"/>`).join("")}
+   <text x="33" y="142" class="lbl mid">mixed</text>
+   <path d="M58 70 H86" class="flowline"/><path d="M80 64 L88 70 L80 76" class="arrowhead"/>
+   ${(()=>{let o="";const labs={1:["cat","var(--q-rep)",0],6:["past tense","var(--q-mech)",2],9:["French","var(--q-control)",4]};for(let r=0;r<3;r++)for(let c=0;c<4;c++){const i=r*4+c,x=98+c*39,y=14+r*38;const L=labs[i];o+=`<rect class="${L?"c k"+(L[2]?"":"0"):""}" x="${x}" y="${y}" width="35" height="32" rx="5" ${L?`style="--qc:${L[1]};animation-delay:${L[2]*1}s"`:`fill="none" stroke="var(--line)" stroke-width="1.2"`}/>`;if(L)o+=`<text class="ct${L[2]?"":" k0"}" x="${x+17.5}" y="${y+20}" style="animation-delay:${L[2]*1}s">${L[0].split(" ")[0]}</text>`;}return o;})()}
+   <text x="176" y="142" class="lbl mid">features: only a few switch on</text></svg>`,
+ STEER:`<svg class="ill i-steer" viewBox="0 0 260 150" role="img" aria-label="A steering arrow pushes the model's hidden state, and the reply changes from helping with a harmful request to refusing it.">
+   <circle cx="78" cy="78" r="58" fill="rgba(var(--heat),.05)" stroke="var(--line)"/>
+   <text x="78" y="146" class="lbl mid">hidden state</text>
+   <path class="vec" d="M60 96 L104 56" stroke="var(--q-control)" stroke-width="3" fill="none"/>
+   <path d="M96 56 L106 54 L103 64" stroke="var(--q-control)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" class="vec"/>
+   <circle class="dot" cx="60" cy="96" r="8" fill="var(--ink)"/>
+   <text x="150" y="58" class="lbl">reply</text>
+   <g class="ta"><rect x="148" y="66" width="104" height="30" rx="8" fill="var(--surface)" stroke="var(--q-detect)"/><text x="200" y="85" class="lbl mid ink">Sure, step 1…</text></g>
+   <g class="tb"><rect x="148" y="66" width="104" height="30" rx="8" fill="var(--surface)" stroke="var(--q-control)"/><text x="200" y="85" class="lbl mid ink">I can't help.</text></g>
+   <text x="200" y="118" class="lbl mid">steered toward refusal</text></svg>`,
+ PATCH:`<svg class="ill i-patch" viewBox="0 0 260 150" role="img" aria-label="One internal piece from run A is copied into run B, and run B's answer changes from Rome to Paris.">
+   <text x="10" y="40" class="lbl ink">Run A</text><text x="10" y="104" class="lbl ink">Run B</text>
+   ${[0,1,2,3].map(i=>`<rect x="${58+i*34}" y="22" width="28" height="28" rx="5" fill="rgba(var(--heat),.12)"/>`).join("")}
+   ${[0,1,3].map(i=>`<rect x="${58+i*34}" y="86" width="28" height="28" rx="5" fill="rgba(var(--heat),.12)"/>`).join("")}
+   <rect class="orig" x="126" y="86" width="28" height="28" rx="5" fill="rgba(var(--heat),.12)"/>
+   <rect x="126" y="22" width="28" height="28" rx="5" fill="var(--q-mech)" opacity=".85"/>
+   <rect class="mover" x="126" y="22" width="28" height="28" rx="5" fill="var(--q-mech)"/>
+   <text x="230" y="41" class="lbl mid ink">Paris</text>
+   <g class="ta"><text x="230" y="105" class="lbl mid ink">Rome</text></g>
+   <g class="tb"><text x="230" y="105" class="lbl mid ink" fill="var(--q-mech)" style="fill:var(--q-mech)">Paris</text></g>
+   <text x="130" y="142" class="lbl mid">swap one piece: did the answer change?</text></svg>`,
+ TC:`<svg class="ill i-circ" viewBox="0 0 260 150" role="img" aria-label="A path lights up from an input word through an internal feature to the output word.">
+   ${(()=>{let o="";const xs=[40,130,220],ys=[22,62,102];for(let a=0;a<2;a++)for(let i=0;i<3;i++)for(let j=0;j<3;j++)o+=`<path class="faint" d="M${xs[a]} ${ys[i]} L${xs[a+1]} ${ys[j]}"/>`;for(let a=0;a<3;a++)for(let i=0;i<3;i++)o+=`<circle cx="${xs[a]}" cy="${ys[i]}" r="10" fill="rgba(var(--heat),.14)"/>`;return o;})()}
+   <path class="e1" d="M40 62 L130 22" stroke="var(--q-plan)" stroke-width="4" fill="none" stroke-linecap="round"/>
+   <path class="e2" d="M130 22 L220 62" stroke="var(--q-plan)" stroke-width="4" fill="none" stroke-linecap="round"/>
+   <circle class="n1" cx="40" cy="62" r="10" fill="var(--q-plan)"/>
+   <circle class="n2" cx="130" cy="22" r="10" fill="var(--q-plan)"/>
+   <circle class="n3" cx="220" cy="62" r="10" fill="var(--q-plan)"/>
+   <text x="40" y="133" class="lbl mid">input</text><text x="40" y="146" class="lbl mid ink">"records"</text>
+   <text x="130" y="133" class="lbl mid">feature</text><text x="130" y="146" class="lbl mid ink">"accountant"</text>
+   <text x="220" y="133" class="lbl mid">output</text><text x="220" y="146" class="lbl mid ink">"an"</text></svg>`,
+ DIFF:`<svg class="ill i-diff" viewBox="0 0 260 150" role="img" aria-label="Layers of a model before and after fine-tuning are compared; one layer shows a large difference that reveals the fine-tuning topic.">
+   <text x="42" y="14" class="lbl mid ink">before</text><text x="218" y="14" class="lbl mid ink">after</text><text x="130" y="14" class="lbl mid">difference</text>
+   ${[0,1,2,3,4].map(i=>`<rect x="12" y="${22+i*20}" width="60" height="13" rx="3" fill="rgba(var(--heat),.14)"/><rect x="188" y="${22+i*20}" width="60" height="13" rx="3" fill="rgba(var(--heat),.14)"/>`).join("")}
+   ${[0,1,3,4].map(i=>`<rect x="94" y="${22+i*20}" width="${[6,9,0,5,7][i]}" height="13" rx="2" fill="rgba(var(--heat),.3)"/>`).join("")}
+   <rect class="big" x="94" y="62" width="72" height="13" rx="2" fill="var(--q-origin)"/>
+   <g class="ta"><text x="130" y="140" class="lbl mid">looks the same from outside…</text></g>
+   <g class="tb"><text x="130" y="140" class="lbl mid ink">…but reveals the fine-tuning topic</text></g></svg>`,
+ TDA:`<svg class="ill i-tda" viewBox="0 0 260 150" role="img" aria-label="A stack of training documents; one lights up and connects to the internal circuit it helped build.">
+   ${[0,1,2,3,4].map(i=>`<g><rect x="16" y="${10+i*25}" width="46" height="20" rx="3" fill="var(--surface)" stroke="var(--line)"/>${i===2?`<rect class="hot" x="16" y="${10+i*25}" width="46" height="20" rx="3" fill="var(--q-origin)"/>`:""}<path d="M22 ${17+i*25} H54 M22 ${23+i*25} H46" stroke="var(--muted)" stroke-width="1.5" opacity=".6"/></g>`).join("")}
+   <text x="39" y="146" class="lbl mid">training texts</text>
+   <path class="faint" d="M66 70 C120 70 130 70 168 70"/>
+   <path class="e1" d="M66 70 C120 70 130 70 168 70" stroke="var(--q-origin)" stroke-width="3" fill="none"/>
+   <path class="faint" d="M185 45 L230 70 L185 95 Z"/>
+   <circle class="n1" cx="185" cy="45" r="10" fill="var(--q-origin)"/><circle class="n1" cx="230" cy="70" r="10" fill="var(--q-origin)"/><circle class="n1" cx="185" cy="95" r="10" fill="var(--q-origin)"/>
+   <text x="205" y="128" class="lbl mid ink">the circuit it built</text></svg>`,
+ GEO:`<svg class="ill i-geo" viewBox="0 0 260 150" role="img" aria-label="Emotion concepts sit around a ring inside the model, with a light traveling around it.">
+   <circle cx="130" cy="74" r="50" fill="none" stroke="var(--line)" stroke-dasharray="3 5"/>
+   ${[0,1,2,3,4,5,6,7].map(i=>{const a=-Math.PI/2+i*Math.PI/4;return `<circle class="rd" cx="${(130+50*Math.cos(a)).toFixed(1)}" cy="${(74+50*Math.sin(a)).toFixed(1)}" r="6" fill="var(--${["q-origin","q-mech","q-detect","q-valid","q-plan","q-rep","q-control","q-control"][i]})" style="animation-delay:${i*.5}s"/>`}).join("")}
+   <text x="130" y="15" class="lbl mid ink">excited</text><text x="194" y="78" class="lbl ink">angry</text>
+   <text x="130" y="140" class="lbl mid ink">sad</text><text x="66" y="78" class="lbl ink" text-anchor="end">calm</text></svg>`
+};
+function renderExplain(){
+  $("qgrid").innerHTML=QS.map(([k,l,f,c])=>{const [plain,eg,src]=QPLAIN[k];
+    return `<article class="qcard" style="--qc:${c}"><h3>${esc(l)}</h3><p class="plain">${esc(plain)}</p><p class="eg"><b>2026 example (${esc(src)}):</b> ${esc(eg)}</p></article>`;}).join("");
+  $("tgrid").innerHTML=TOOLS.map(t=>{
+    const ps=P.filter(p=>p.tech.includes(t.k));
+    const qc={};ps.forEach(p=>p.q.forEach(q=>qc[q]=(qc[q]||0)+1));
+    const top=Object.entries(qc).sort((a,b)=>b[1]-a[1]).slice(0,2);
+    return `<article class="tcard"><div class="stage">${ILL[t.k]}</div><div class="body">
+      <h3>${esc(t.name)}</h3><p class="what">${esc(t.what)}</p><p class="like"><b>Think of it like</b> ${esc(t.like)}</p>
+      <div class="used">In ${ps.length} paper${ps.length===1?"":"s"}, mostly for ${top.map(([q])=>`<span class="chip" style="--qc:${qColor(q)}">${esc(nameOf(QS,q))}</span>`).join("")}</div>
+      <button class="go" data-k="${t.k}">Show these papers on the map</button></div></article>`;}).join("");
+  $("tgrid").querySelectorAll(".go").forEach(b=>b.onclick=()=>{state.f={q:null,tech:b.dataset.k,tg:null,dm:null};setTab("map");render();scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});});
+  // hero layers
+  let h="";const xs=[205,275,345,415,485];
+  xs.forEach((x,li)=>{for(let r=0;r<6;r++){const acc=(li*7+r*3)%5===0;h+=`<circle class="unit" cx="${x}" cy="${48+r*32}" r="9" ${acc?`style="fill:var(--q-rep);animation-delay:${(li*.28+r*.04).toFixed(2)}s"`:`style="animation-delay:${(li*.28+r*.04).toFixed(2)}s"`}/>`;}});
+  document.getElementById("hero-layers").innerHTML=h;
+  const io=new IntersectionObserver(es=>es.forEach(e=>e.target.classList.toggle("play",e.isIntersecting)),{threshold:.2});
+  document.querySelectorAll(".ill").forEach(el=>io.observe(el));
+}
+function setTab(which){
+  const map=which==="map";
+  $("tab-map").hidden=!map;$("tab-explain").hidden=map;
+  [["t-map",map],["t-explain",!map]].forEach(([id,on])=>{const b=$(id);b.setAttribute("aria-selected",on);b.tabIndex=on?0:-1;});
+  if(map) render();
+}
+$("t-map").onclick=()=>setTab("map");
+$("t-explain").onclick=()=>setTab("explain");
+document.querySelector(".tabs").addEventListener("keydown",e=>{if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;const cur=["map","explain","plan"].findIndex(t=>$("t-"+t).getAttribute("aria-selected")==="true");const nx=["map","explain","plan"][(cur+(e.key==="ArrowRight"?1:2))%3];setTab(nx);$("t-"+nx).focus();});
+renderExplain();
+
+/* ---------- plan tab ---------- */
+const GOALS=[
+ {k:"mech",fill:"a mechanistic explanation",t:"Explain a mechanism",e:"Predict unseen behavior and intervention effects.",q:["MECH","PLAN"]},
+ {k:"know",fill:"knowledge discovery",t:"Discover knowledge",e:"Produce a new hypothesis and validate it independently.",q:["REP"]},
+ {k:"detect",fill:"problem detection",t:"Detect problems",e:"Catch meaningful failures with measured false alarms.",q:["DETECT"]},
+ {k:"predict",fill:"behavior prediction",t:"Predict behavior",e:"Anticipate failures or capabilities in new settings.",q:[]},
+ {k:"control",fill:"behavior control",t:"Control behavior",e:"Make targeted changes with limited side effects.",q:["CONTROL"]},
+ {k:"perf",fill:"better efficiency or performance",t:"Improve efficiency or performance",e:"Improve outcomes against competitive baselines.",q:["CONTROL"]},
+ {k:"methods",fill:"better research methods",t:"Improve research methods",e:"Enable more reliable or affordable discovery and validation.",q:["VALID"]}
+];
+const CHECKS=[
+ {k:"ask",t:"2. Ask before starting",items:["What exact phenomenon are we investigating?","Why does resolving it matter?","What would success let us explain or do?","Why might internal access help?","What model, data, and interaction scope will we study?","What is the simplest credible baseline?","What measurable task represents progress toward the goal?","How could that task reward the wrong thing?","What result would change our mind?"]},
+ {k:"evid",t:"3. Design convincing evidence",items:["Separate observations, hypotheses, and conclusions.","Specify competing explanations.","Reserve unseen cases for validation.","Test causal claims with interventions and controls.","Check intervention artifacts and unintended effects.","Test relevant distribution shifts and individual failures.","Compare methods under comparable resources and access.","Report uncertainty, costs, failures, and scope limits.","Preserve reproducible data, configurations, and procedures."]},
+ {k:"ground",t:"4. Keep the project grounded",items:["Start simple. Add complexity for a demonstrated limitation.","Treat feature labels and reconstruction scores as intermediate evidence.","Time-box exploration, then test a concrete prediction.","Reassess whether the evaluation still measures the goal.","Set advance criteria to continue, redirect, or stop."]}
+];
+const BLANKS=[["phen","phenomenon"],["goal","goal"],["claim","claim"],["pred","prediction"],["base","baseline"],["unseen","unseen setting"],["meas","benefit, cost, and side effects"],["fail","failure criterion"]];
+const PKEY="interp-plan-v1";
+let plan={goal:null,checks:{},fields:{}};
+try{const raw=localStorage.getItem(PKEY);if(raw)plan=Object.assign(plan,JSON.parse(raw));}catch(e){}
+const savePlan=()=>{try{localStorage.setItem(PKEY,JSON.stringify(plan));}catch(e){}};
+
+function renderGoals(){
+  $("goals").innerHTML=GOALS.map(g=>`<div class="goal" role="radio" tabindex="0" aria-checked="${plan.goal===g.k}" data-k="${g.k}">
+     <div class="gh"><span class="radio"></span><h3>${esc(g.t)}</h3></div>
+     <p class="ev2"><b>Evidence to aim for</b>${esc(g.e)}</p>
+     <div class="rel">${g.q.length?`Related 2026 papers: ${g.q.map(q=>`<a role="button" tabindex="0" data-q="${q}" style="--qc:${qColor(q)}">${esc(nameOf(QS,q))} (${P.filter(p=>p.q.includes(q)).length})</a>`).join("")}`:`No matching question on the map yet.`}</div>
+   </div>`).join("");
+  $("goals").querySelectorAll(".goal").forEach(el=>{
+    const pick=()=>{plan.goal=el.dataset.k;if(!plan.fields.goal||GOALS.some(g=>g.fill===plan.fields.goal))plan.fields.goal=GOALS.find(g=>g.k===el.dataset.k).fill;savePlan();renderGoals();renderStmt();};
+    el.addEventListener("click",e=>{if(e.target.closest("a"))return;pick();});
+    el.addEventListener("keydown",e=>{if(e.target!==el)return;if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}});
+  });
+  $("goals").querySelectorAll("a[data-q]").forEach(a=>{
+    const go=()=>{state.f={q:a.dataset.q,tech:null,tg:null,dm:null};setTab("map");scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});};
+    a.addEventListener("click",e=>{e.stopPropagation();go();});
+    a.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();go();}});
+  });
+}
+function renderChecks(){
+  $("checks").innerHTML=CHECKS.map(g=>{
+    const done=g.items.filter((_,i)=>plan.checks[g.k+i]).length;
+    return `<div class="panel cgroup"><h3>${esc(g.t)}<span>${done} of ${g.items.length}</span></h3>
+      <div class="bar"><i style="width:${100*done/g.items.length}%"></i></div>
+      <ul>${g.items.map((it,i)=>`<li><label><input type="checkbox" data-id="${g.k+i}" ${plan.checks[g.k+i]?"checked":""}><span>${esc(it)}</span></label></li>`).join("")}</ul></div>`;
+  }).join("");
+  $("checks").querySelectorAll("input").forEach(c=>c.addEventListener("change",()=>{plan.checks[c.dataset.id]=c.checked;savePlan();renderChecks();$("checks").querySelector(`input[data-id="${c.dataset.id}"]`).focus();}));
+}
+function inp(k,ph){return `<input type="text" data-f="${k}" placeholder="${esc(ph)}" aria-label="${esc(ph)}" value="${esc(plan.fields[k]||"")}" size="${Math.max(ph.length,(plan.fields[k]||"").length,12)}">`;}
+function renderStmtForm(){
+  $("stmtform").innerHTML=`We study ${inp("phen","phenomenon")} to achieve ${inp("goal","goal")}. We hypothesize ${inp("claim","claim")}. We will test ${inp("pred","prediction")} against ${inp("base","baseline")} on ${inp("unseen","unseen setting")}, measuring ${inp("meas","benefit, cost, and side effects")}. We will reconsider if ${inp("fail","failure criterion")}.`;
+  $("stmtform").querySelectorAll("input").forEach(i=>i.addEventListener("input",()=>{plan.fields[i.dataset.f]=i.value;i.size=Math.max(i.placeholder.length,i.value.length,12);savePlan();renderStmt();}));
+}
+function stmtText(html){
+  const v=k=>{const x=(plan.fields[k]||"").trim();const ph=BLANKS.find(b=>b[0]===k)[1];return x?(html?`<b>${esc(x)}</b>`:x):(html?`<span class="blank">[${ph}]</span>`:`[${ph}]`);};
+  return `We study ${v("phen")} to achieve ${v("goal")}. We hypothesize ${v("claim")}. We will test ${v("pred")} against ${v("base")} on ${v("unseen")}, measuring ${v("meas")}. We will reconsider if ${v("fail")}.`;
+}
+function renderStmt(){
+  $("stmtout").innerHTML=stmtText(true);
+  const gi=$("stmtform").querySelector('input[data-f="goal"]');
+  if(gi&&gi.value!==(plan.fields.goal||"")){gi.value=plan.fields.goal||"";gi.size=Math.max(gi.placeholder.length,gi.value.length,12);}
+}
+$("copystmt").onclick=async()=>{
+  const t=stmtText(false);let ok=false;
+  try{await navigator.clipboard.writeText(t);ok=true;}catch(e){
+    try{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove();}catch(e2){}
+  }
+  $("copymsg").textContent=ok?"Copied.":"Couldn't copy automatically. Select the sentence above and copy it.";
+  setTimeout(()=>$("copymsg").textContent="",2500);
+};
+$("resetplan").onclick=()=>{plan={goal:null,checks:{},fields:{}};savePlan();renderGoals();renderChecks();renderStmtForm();renderStmt();};
+renderGoals();renderChecks();renderStmtForm();renderStmt();
+
+/* three-tab switching (replaces the two-tab version) */
+const TABS=["map","explain","plan"];
+setTab=function(which){
+  TABS.forEach(t=>{const on=t===which;$("tab-"+t).hidden=!on;const b=$("t-"+t);b.setAttribute("aria-selected",on);b.tabIndex=on?0:-1;});
+  if(which==="map") render();
+};
+TABS.forEach(t=>$("t-"+t).onclick=()=>setTab(t));
+</script>
+</body>
+</html>
