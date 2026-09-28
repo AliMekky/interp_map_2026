@@ -265,6 +265,31 @@ svg.hp .nd:not(.on){opacity:.35}
 .copymsg{font-size:.85rem;color:var(--muted)}
 .stmt-actions .go{font:inherit;font-size:.85rem;font-weight:600;background:var(--ink);color:var(--surface);border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
 
+
+/* simplified map tab */
+.block{margin-top:16px}
+.sec.block{padding:20px 22px}
+.sechead{margin-bottom:14px}
+.sechead h2{font-family:var(--serif);font-size:1.3rem;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.sechead p{margin:0;color:var(--muted);font-size:.9rem;max-width:80ch}
+.stepn{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--surface);font-family:var(--sans);font-size:.8rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.block .mapwrap{padding:0;overflow-x:auto}
+.block svg.atlas-svg{max-width:1040px;margin:0 auto}
+table.cov{font-size:.88rem;border-spacing:4px}
+.cov td button{height:40px;min-width:64px;font-size:.95rem}
+.cov tbody th button{font-size:.9rem;padding-right:8px}
+.cov thead th button{font-size:.85rem}
+.papers-box > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px 22px}
+.papers-box > summary::-webkit-details-marker{display:none}
+.papers-box .sumtxt{display:flex;flex-direction:column;flex:1}
+.papers-box .sumtxt b{font-family:var(--serif);font-size:1.25rem}
+.papers-box .sumtxt small{color:var(--muted);font-size:.86rem}
+.chev{width:12px;height:12px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 6px 6px 0}
+.papers-box[open] .chev{transform:rotate(-135deg);margin:6px 6px 0 0}
+.papers-box[open] > summary{border-bottom:1px solid var(--line)}
+.papers-box .cards{padding:18px 22px 22px}
+@media (prefers-reduced-motion:no-preference){.chev{transition:transform .15s}}
+
 /* lower sections */
 .lower{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;margin-top:16px}
 .sec{padding:18px 20px}
@@ -334,7 +359,7 @@ footer p{max-width:84ch;margin:0 0 10px}
     <button role="tab" id="t-plan" aria-selected="false" aria-controls="tab-plan" class="tab" tabindex="-1">Plan a study</button>
   </div>
   <div id="tab-map" role="tabpanel" aria-labelledby="t-map">
-  <p class="intro">30 interpretability papers from ICLR, CVPR, ACL and ICML 2026, traced from the question each one asks, through the technique it uses and the part of the model it inspects, to the domain it studies. Click any box to filter; clicks in different columns combine. Hover a paper to trace its path.</p>
+  <p class="intro">30 interpretability papers from ICLR, CVPR, ACL and ICML 2026. Start with the table to see which tools answer which questions, then follow them into the model and out to their domains. Filters combine across both views, and the matching papers are listed at the bottom.</p>
 
   <section class="controls" aria-label="Filters">
     <div class="group"><span>Presented since</span><div class="seg" id="since"></div></div>
@@ -342,32 +367,26 @@ footer p{max-width:84ch;margin:0 0 10px}
   </section>
   <div class="active" id="active" aria-live="polite"></div>
 
-  <div class="atlas">
-    <div class="panel mapwrap" id="mapwrap"><svg class="atlas-svg" id="svg" role="img" aria-label="Map linking interpretability questions to techniques, target objects and domains"></svg></div>
-    <aside class="panel papers-panel" id="pp">
-      <div class="pp-head"><h2>Example papers</h2><p id="ppcount"></p></div>
-      <div class="pp-list" id="pplist"></div>
-    </aside>
-  </div>
-
-  <div class="lower">
-    <section class="panel sec">
-      <h2>Technique × question coverage</h2>
-      <p>Number of papers using each technique for each question. Click a cell to filter the map.</p>
-      <div class="scroll"><table class="cov" id="cov"></table></div>
-    </section>
-    <section class="panel sec">
-      <h2>Key takeaways from 2026</h2>
-      <p>Based on all 30 papers in this map.</p>
-      <ol class="take" id="take"></ol>
-    </section>
-  </div>
-
-  <section class="details">
-    <h2>Paper details</h2>
-    <p id="detdesc"></p>
-    <div class="cards" id="cards"></div>
+  <section class="panel sec block">
+    <div class="sechead">
+      <h2><span class="stepn">1</span>Technique × question</h2>
+      <p>How many 2026 papers used each technique to answer each question. Darker cells hold more papers. Click a cell, row or column to filter everything below.</p>
+    </div>
+    <div class="scroll"><table class="cov" id="cov"></table></div>
   </section>
+
+  <section class="panel sec block">
+    <div class="sechead">
+      <h2><span class="stepn">2</span>Question → technique → target object → domain</h2>
+      <p>The same papers followed one step further: which part of the model each technique inspects, and where the work is applied. Lines are colored by question. Click any box to filter.</p>
+    </div>
+    <div class="mapwrap" id="mapwrap"><svg class="atlas-svg" id="svg" role="img" aria-label="Map linking interpretability questions to techniques, target objects and domains"></svg></div>
+  </section>
+
+  <details class="panel block papers-box" id="papersbox">
+    <summary><span class="stepn">3</span><span class="sumtxt"><b id="papersum">Papers</b><small id="detdesc"></small></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="cards" id="cards"></div>
+  </details>
 
   </div>
 <div id="tab-explain" role="tabpanel" aria-labelledby="t-explain" hidden>
@@ -641,7 +660,7 @@ function renderControls(){
   });
   const ab=$("active");
   const bits=COLS.filter(c=>state.f[c.key]).map(c=>`<button class="fchip" data-k="${c.key}"><b>${c.title}:</b> ${esc(nameOf(c.arr,state.f[c.key]))}<span aria-label="remove">✕</span></button>`);
-  ab.innerHTML=bits.length?`<span class="lab">Showing papers that match</span>${bits.join("")}<button class="fchip" id="clr">Clear all</button>`:`<span class="lab">No column filters. Click a box in the map or a cell in the coverage table.</span>`;
+  ab.innerHTML=bits.length?`<span class="lab">Showing papers that match</span>${bits.join("")}<button class="fchip" id="clr">Clear all</button>`:`<span class="lab">No filters yet. Click a cell in the table or a box in the figure.</span>`;
   ab.querySelectorAll("button[data-k]").forEach(b=>b.onclick=()=>{state.f[b.dataset.k]=null;render();});
   const c=$("clr");if(c)c.onclick=()=>{state.f={q:null,tech:null,tg:null,dm:null};render();};
 }
@@ -777,7 +796,7 @@ function renderCoverage(pool){
 }
 
 function renderCards(list){
-  $("detdesc").textContent=hasF()?"Papers matching the current selection, newest first.":"All papers matching the venue, date and search filters, newest first.";
+  $("papersum").textContent=`${list.length} paper${list.length===1?"":"s"}`;$("detdesc").textContent=(hasF()?"Matching the current selection":"All papers matching the venue, date and search filters")+". Newest first. Click to show or hide.";
   $("cards").innerHTML=list.length?list.map(p=>`
     <article class="paper" id="card-${p.i}" style="--vc:${VENUES[p.v].color}">
       <div class="pmeta"><b>${VENUES[p.v].label}</b><span>${p.tr}</span><span>${MONTHS[p.m]}</span></div>
@@ -795,15 +814,10 @@ function render(){
   const pool=P.filter(inPool);
   const list=pool.filter(matches).sort((a,b)=>b.m-a.m||a.v.localeCompare(b.v));
   renderAtlas(pool);
-  renderPanel(list);
   renderCoverage(pool);
   renderCards(list);
-  const mh=$("mapwrap").getBoundingClientRect().height;
-  if(mh&&innerWidth>1060) $("pp").style.setProperty("--ph",mh+"px");
 }
-$("take").innerHTML=TAKE.map(([q,t])=>`<li style="--qc:${qColor(q)}">${esc(t)}</li>`).join("");
 $("q").addEventListener("input",e=>{state.text=e.target.value.trim();render();});
-addEventListener("resize",()=>{const mh=$("mapwrap").getBoundingClientRect().height;$("pp").style.setProperty("--ph",innerWidth>1060?mh+"px":"520px");});
 render();
 
 /* ---------- explainer tab ---------- */
